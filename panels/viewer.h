@@ -51,6 +51,8 @@ public:
 	qint64 start_msecs;
 	QTimer playback_updater;
 	bool just_played;
+	void check_if_end();
+	bool looping;
 
 	void cue_recording(long start, long end, int track);
 	void uncue_recording();
@@ -76,7 +78,7 @@ public slots:
 	void toggle_play();
 	void next_frame();
 	void go_to_end();
-	void check_if_end();
+	void toggle_loop();
 
 private slots:
 	void update_playhead();
@@ -96,6 +98,7 @@ private:
 	void set_sb_max();
 
 	QIcon playIcon;
+	QIcon loopIcon;
 
 	void setup_ui();
 
@@ -110,6 +113,7 @@ private:
 	QPushButton* btnPlay;
 	QPushButton* btnFastForward;
 	QPushButton* btnSkipToEnd;
+	QPushButton* btnLoop;
 
 	bool cue_recording_internal;
 	QTimer recording_flasher;

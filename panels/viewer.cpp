@@ -40,6 +40,7 @@ Viewer::Viewer(QWidget *parent) :
 	QDockWidget(parent),
 	playing(false),
 	just_played(false),
+	looping(false),
 	media(NULL),
 	seq(NULL),
 	created_sequence(false),
@@ -87,6 +88,7 @@ bool Viewer::is_focused() {
 			|| btnRewind->hasFocus()
 			|| btnPlay->hasFocus()
 			|| btnFastForward->hasFocus()
+			|| btnLoop->hasFocus()
 			|| btnSkipToEnd->hasFocus();
 }
 
@@ -282,6 +284,17 @@ void Viewer::check_if_end() {
 		} else if (seq->playhead >= seq->getEndFrame()) {
 			seek(0);
 		}
+	}
+}
+
+void Viewer::toggle_loop() {
+	looping = !looping;
+	if (!looping) {
+		// btnLoop->setIcon(QIcon(":/icons/pause.png"));
+		btnLoop->setText("Loop off");
+	} else {
+		// btnLoop->setIcon(loopIcon);
+		btnLoop->setText("Loop on");
 	}
 }
 
@@ -544,6 +557,14 @@ void Viewer::setup_ui() {
 	connect(btnSkipToEnd, SIGNAL(clicked(bool)), this, SLOT(go_to_end()));
 	playback_control_layout->addWidget(btnSkipToEnd);
 
+	btnLoop = new QPushButton(playback_controls);
+	loopIcon.addFile(QStringLiteral(":/icons/play.png"), QSize(), QIcon::Normal, QIcon::On);
+	loopIcon.addFile(QStringLiteral(":/icons/play-disabled.png"), QSize(), QIcon::Disabled, QIcon::On);
+	// btnLoop->setIcon(loopIcon);
+	btnLoop->setText("Loop off");
+	connect(btnLoop, SIGNAL(clicked(bool)), this, SLOT(toggle_loop()));
+	playback_control_layout->addWidget(btnLoop);
+
 	lower_control_layout->addWidget(playback_controls);
 
 	QWidget* end_timecode_container = new QWidget(lower_controls);
@@ -659,7 +680,13 @@ void Viewer::timer_update() {
 			&& seq->playhead >= end_frame
 			&& previous_playhead < end_frame)
 			|| (recording && recording_start != recording_end && seq->playhead >= recording_end)) {
-		pause();
+				if (!looping || recording) {
+					pause();
+				} else {
+					go_to_start(); // replace with dedicated loop() function
+					play();
+				}
+		// pause();
 	}
 }
 
@@ -713,6 +740,7 @@ void Viewer::set_sequence(bool main, Sequence *s) {
 	btnPlay->setEnabled(!null_sequence);
 	btnFastForward->setEnabled(!null_sequence);
 	btnSkipToEnd->setEnabled(!null_sequence);
+	btnLoop->setEnabled(!null_sequence);
 
 	if (!null_sequence) {
 		currentTimecode->set_frame_rate(seq->frame_rate);
