@@ -76,6 +76,7 @@ public slots:
 	void toggle_play();
 	void next_frame();
 	void go_to_end();
+	void check_if_end();
 
 private slots:
 	void update_playhead();

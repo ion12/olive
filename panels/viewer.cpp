@@ -275,6 +275,16 @@ void Viewer::go_to_end() {
 	}
 }
 
+void Viewer::check_if_end() {
+	if (seq != NULL) {
+		if (seq->using_workarea && seq->playhead >= seq->workarea_out) {
+			seek(seq->workarea_in);
+		} else if (seq->playhead >= seq->getEndFrame()) {
+			seek(0);
+		}
+	}
+}
+
 void Viewer::cue_recording(long start, long end, int track) {
 	recording_start = start;
 	recording_end = end;
@@ -298,6 +308,7 @@ void Viewer::toggle_play() {
 	if (playing) {
 		pause();
 	} else {
+		check_if_end();
 		play();
 	}
 }
